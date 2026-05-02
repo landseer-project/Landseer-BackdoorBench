@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# ML / container artifacts
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.safetensors
+*.sif
+checkpoints/
+outputs/
+results/
+wandb/
+
+# Data
+data/
+datasets/
+
+# Logs
+*.log
+*.out
+*.err
+slurm-*.out
+landseer_*.out
+landseer_*.err
+logs/
+run_logs/
+
+# System
+.DS_Store
+.env
+.vscode/
+.idea/

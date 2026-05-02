@@ -1,0 +1,62 @@
+dataset:
+  name: cifar10
+  variant: poisoned
+  params:
+    poison_fraction: 0.05
+    target_class: 0
+    trigger_size: 3
+    trigger_value: 1.0
+
+model:
+  script: configs/model/config_model_resnet20.py
+  framework: pytorch
+
+pipeline:
+  pre_training:
+    noop:
+      name: pre_noop
+      container:
+        image: docker://ghcr.io/landseer-project/pre_noop:v1
+        command: python main.py
+        runtime: apptainer
+
+  during_training:
+    noop:
+      name: in_noop
+      container:
+        image: docker://ghcr.io/landseer-project/in_noop:v5
+        command: python main.py
+        runtime: apptainer
+
+  post_training:
+    tools:
+    - name: backdoorbench-sft
+      required_inputs:
+      - model.pt
+      container:
+        image: /scratch/gilbreth/wang7395/Landseer/integrations/backdoorbench_post/backdoorbench_landseer_post.sif
+        runtime: apptainer
+        command: >-
+          python /app/main.py
+          --method sft
+          --backdoorbench-root /opt/backdoorbench
+          --poison-fraction 0.05
+          --target-class 0
+          --trigger-size 3
+          --trigger-value 1.0
+          --lr-max1 0.1
+          --lr-max2 0.001
+    noop:
+      name: post_noop
+      container:
+        image: docker://ghcr.io/landseer-project/post_noop_new:v1
+        command: python main.py
+        runtime: apptainer
+
+  deployment:
+    noop:
+      name: deploy_noop
+      container:
+        image: docker://ghcr.io/landseer-project/deploy_noop_docker:v1
+        command: python main.py
+        runtime: apptainer
